@@ -6,7 +6,7 @@ app.use(express.json());
 
 const superHeros = require("./src/super-heros/super-heros.json");
 
-app.get("/super-heros", (req, res) => {
+app.get("/", (req, res) => {
   return res.json(superHeros);
 });
 
