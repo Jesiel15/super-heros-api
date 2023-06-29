@@ -3,18 +3,18 @@ const app = express();
 const port = process.env.PORT || 3000;
 const fs = require("fs");
 
-const FIRST_HERO = 0
+const FIRST_HERO_ID = 1;
 
 app.use(express.json());
 
 const readFile = () => {
-  const content = fs.readFileSync("./data//super-heros.json", "utf-8");
+  const content = fs.readFileSync("./data/super-heros.json", "utf-8");
   return JSON.parse(content);
 };
 
 const writeFile = (content) => {
   const updateFile = JSON.stringify(content);
-  fs.writeFileSync("./data//super-heros.json", updateFile, "utf-8");
+  fs.writeFileSync("./data/super-heros.json", updateFile, "utf-8");
 };
 
 app.get("/", (req, res) => {
@@ -27,12 +27,44 @@ app.post("/", (req, res) => {
   const currentContent = readFile();
 
   let hero = currentContent[currentContent.length - 1] || {};
-  let id = hero.id + 1 || FIRST_HERO;
+  let id = hero.id + 1 || FIRST_HERO_ID;
 
   currentContent.push({ id, name, power, img, description, lore });
   writeFile(currentContent);
 
   res.send(currentContent);
+});
+
+app.put("/:id", (req, res) => {
+  const { id } = req.params;
+  const { name, power, img, description, lore } = req.body;
+  const currentContent = readFile();
+
+  const selectedHero = currentContent.findIndex(
+    (item) => item.id.toString() === id
+  );
+
+  const {
+    id: currentId,
+    name: currentName,
+    power: currentPower,
+    img: currentImg,
+    description: currentDescription,
+    lore: currentLore,
+  } = currentContent[selectedHero];
+
+  const newObjectHero = {
+    id: currentId,
+    name: name ? name : currentName,
+    power: power ? power : currentPower,
+    img: img ? img : currentImg,
+    description: description ? description : currentDescription,
+    lore: lore ? lore : currentLore,
+  };
+
+  currentContent[selectedHero] = newObjectHero;
+  writeFile(currentContent);
+  res.send(newObjectHero);
 });
 
 app.listen(port, () => {
