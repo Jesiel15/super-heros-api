@@ -22,6 +22,22 @@ app.get("/", (req, res) => {
   res.send(content);
 });
 
+app.get("/:name", (req, res) => {
+  const { name } = req.params;
+  const currentContent = readFile();
+  const arrayHero = [];
+  i = 0;
+  currentContent.findIndex((hero) => {
+    if (hero.name === name) {
+      console.log(name);
+      arrayHero[i] = hero;
+      i++;
+    }
+  });
+
+  res.send(arrayHero);
+});
+
 app.post("/", (req, res) => {
   const { name, power, img, description, lore } = req.body;
   const currentContent = readFile();
