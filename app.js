@@ -26,16 +26,13 @@ app.get("/:name", (req, res) => {
   const { name } = req.params;
   const currentContent = readFile();
   const arrayHero = [];
+  
   i = 0;
   currentContent.findIndex((hero) => {
-    if (hero.name === name) {
-      console.log(name);
-      arrayHero[i] = hero;
-      i++;
-    }
+    hero.name === name ? (arrayHero[i] = hero,  i++) : null
   });
 
-  res.send(arrayHero);
+  arrayHero.length > 0 ?  res.send(arrayHero) :  res.send("Nenhum hero com esse nome na lista!");
 });
 
 app.post("/", (req, res) => {
