@@ -41,7 +41,7 @@ app.put("/:id", (req, res) => {
   const currentContent = readFile();
 
   const selectedHero = currentContent.findIndex(
-    (item) => item.id.toString() === id
+    (hero) => hero.id.toString() === id
   );
 
   const {
@@ -65,6 +65,22 @@ app.put("/:id", (req, res) => {
   currentContent[selectedHero] = newObjectHero;
   writeFile(currentContent);
   res.send(newObjectHero);
+});
+
+app.delete("/:id", (req, res) => {
+  const { id } = req.params;
+  const currentContent = readFile();
+  const selectedHero = currentContent.findIndex(
+    (hero) => hero.id.toString() === id
+  );
+
+  if (selectedHero >= 0) {
+    currentContent.splice(selectedHero, 1);
+    writeFile(currentContent);
+    res.send("Hero adicionado!");
+  } else {
+    res.send("Hero não encontrado!");
+  }
 });
 
 app.listen(port, () => {
