@@ -6,6 +6,8 @@ Criar o arquivo package
 Gerencia as requisições, rotas, URLs, entre outra funcionalidade..
 `npm install express`
 
+Retira o erro de cors
+`npm install cors`
 
 Rodar o Localhost
 `node app.js`

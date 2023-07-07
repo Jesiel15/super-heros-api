@@ -1,11 +1,12 @@
 const express = require("express");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 7000;
 const fs = require("fs");
-
+const cors = require('cors')
 const FIRST_HERO_ID = 1;
 
 app.use(express.json());
+app.use(cors())
 
 const readFile = () => {
   const content = fs.readFileSync("./data/super-heros.json", "utf-8");
@@ -36,13 +37,13 @@ app.get("/:name", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  const { name, power, img, description, lore } = req.body;
+  const { name, power, img, description, lore, origin, sex } = req.body;
   const currentContent = readFile();
 
   let hero = currentContent[currentContent.length - 1] || {};
   let id = hero.id + 1 || FIRST_HERO_ID;
 
-  currentContent.push({ id, name, power, img, description, lore });
+  currentContent.push({ id, name, power, img, description, lore, origin, sex });
   writeFile(currentContent);
 
   res.send(currentContent);
@@ -50,7 +51,7 @@ app.post("/", (req, res) => {
 
 app.put("/:id", (req, res) => {
   const { id } = req.params;
-  const { name, power, img, description, lore } = req.body;
+  const { name, power, img, description, lore, origin, sex } = req.body;
   const currentContent = readFile();
 
   const selectedHero = currentContent.findIndex(
@@ -64,6 +65,8 @@ app.put("/:id", (req, res) => {
     img: currentImg,
     description: currentDescription,
     lore: currentLore,
+    origin: currentOrigin,
+    sex: currentSex
   } = currentContent[selectedHero];
 
   const newObjectHero = {
@@ -73,6 +76,8 @@ app.put("/:id", (req, res) => {
     img: img ? img : currentImg,
     description: description ? description : currentDescription,
     lore: lore ? lore : currentLore,
+    origin: origin ? origin : currentOrigin,
+    sex: sex ? sex : currentSex
   };
 
   currentContent[selectedHero] = newObjectHero;
@@ -90,12 +95,12 @@ app.delete("/:id", (req, res) => {
   if (selectedHero >= 0) {
     currentContent.splice(selectedHero, 1);
     writeFile(currentContent);
-    res.send("Hero adicionado!");
+    res.send("Herói deletado!");
   } else {
-    res.send("Hero não encontrado!");
+    res.send("Herói não encontrado!");
   }
 });
 
 app.listen(port, () => {
-  console.log("Servidor iniciado na porta 3000: http://localhost:3000/");
+  console.log("Servidor iniciado na porta 7000: http://localhost:7000/");
 });
