@@ -101,6 +101,11 @@ app.delete("/:id", (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log("Servidor iniciado na porta 7000: http://localhost:7000/");
+// app.listen(port, () => {
+//   console.log("Servidor iniciado na porta 7000: http://localhost:7000/");
+// });
+
+// Ajuste para AWS
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Servidor iniciado na porta ${port}: http://0.0.0.0:${port}/`);
 });
