@@ -107,7 +107,7 @@ app.delete("/:id", (req, res) => {
 // });
 
 // Ajuste para AWS
-app.listen(7000, '0.0.0.0', () => {
-  console.log('Servidor iniciado na porta 7000');
+app.listen(443, '0.0.0.0', () => {
+  console.log('Servidor iniciado na porta 443');
 });
 
