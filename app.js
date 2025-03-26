@@ -1,52 +1,59 @@
 const express = require("express");
+const https = require("https");
+const fs = require("fs");
+const cors = require("cors");
+
 const app = express();
 const port = process.env.PORT || 7000;
-const fs = require("fs");
-const cors = require('cors')
 const FIRST_HERO_ID = 1;
 
-app.use(express.json());
-app.use(cors())
+// Carregar certificados SSL (coloque os arquivos na pasta 'ssl/')
+const options = {
+  key: fs.readFileSync("./ssl/server.key"),
+  cert: fs.readFileSync("./ssl/server.cert"),
+};
 
+app.use(express.json());
+app.use(cors());
+
+// Funções para leitura e escrita no JSON
 const readFile = () => {
   const content = fs.readFileSync("./data/super-heros.json", "utf-8");
   return JSON.parse(content);
 };
 
 const writeFile = (content) => {
-  const updateFile = JSON.stringify(content);
+  const updateFile = JSON.stringify(content, null, 2);
   fs.writeFileSync("./data/super-heros.json", updateFile, "utf-8");
 };
 
+// Endpoints
 app.get("/", (req, res) => {
-  const content = readFile();
-  res.send(content);
+  res.send(readFile());
 });
 
 app.get("/:name", (req, res) => {
   const { name } = req.params;
-  const currentContent = readFile();
-  const arrayHero = [];
-  
-  i = 0;
-  currentContent.findIndex((hero) => {
-    hero.name === name ? (arrayHero[i] = hero,  i++) : null
-  });
+  const heroes = readFile().filter(hero => hero.name.toLowerCase() === name.toLowerCase());
 
-  arrayHero.length > 0 ?  res.send(arrayHero) :  res.send("Nenhum hero com esse nome na lista!");
+  if (heroes.length > 0) {
+    res.send(heroes);
+  } else {
+    res.status(404).send({ message: "Nenhum herói encontrado com esse nome!" });
+  }
 });
 
 app.post("/", (req, res) => {
   const { name, power, img, description, lore, origin, sex } = req.body;
   const currentContent = readFile();
 
-  let hero = currentContent[currentContent.length - 1] || {};
-  let id = hero.id + 1 || FIRST_HERO_ID;
+  let id = (currentContent[currentContent.length - 1]?.id || FIRST_HERO_ID - 1) + 1;
 
-  currentContent.push({ id, name, power, img, description, lore, origin, sex });
+  const newHero = { id, name, power, img, description, lore, origin, sex };
+  currentContent.push(newHero);
   writeFile(currentContent);
 
-  res.send(currentContent);
+  res.status(201).send(newHero);
 });
 
 app.put("/:id", (req, res) => {
@@ -54,60 +61,38 @@ app.put("/:id", (req, res) => {
   const { name, power, img, description, lore, origin, sex } = req.body;
   const currentContent = readFile();
 
-  const selectedHero = currentContent.findIndex(
-    (hero) => hero.id.toString() === id
-  );
+  const index = currentContent.findIndex(hero => hero.id.toString() === id);
+  if (index === -1) {
+    return res.status(404).send({ message: "Herói não encontrado!" });
+  }
 
-  const {
-    id: currentId,
-    name: currentName,
-    power: currentPower,
-    img: currentImg,
-    description: currentDescription,
-    lore: currentLore,
-    origin: currentOrigin,
-    sex: currentSex
-  } = currentContent[selectedHero];
-
-  const newObjectHero = {
-    id: currentId,
-    name: name ? name : currentName,
-    power: power ? power : currentPower,
-    img: img ? img : currentImg,
-    description: description ? description : currentDescription,
-    lore: lore ? lore : currentLore,
-    origin: origin ? origin : currentOrigin,
-    sex: sex ? sex : currentSex
-  };
-
-  currentContent[selectedHero] = newObjectHero;
+  currentContent[index] = { ...currentContent[index], name, power, img, description, lore, origin, sex };
   writeFile(currentContent);
-  res.send(newObjectHero);
+  res.send(currentContent[index]);
 });
 
 app.delete("/:id", (req, res) => {
   const { id } = req.params;
   const currentContent = readFile();
-  const selectedHero = currentContent.findIndex(
-    (hero) => hero.id.toString() === id
-  );
 
-  if (selectedHero >= 0) {
-    currentContent.splice(selectedHero, 1);
-    writeFile(currentContent);
-    res.send("Herói deletado!");
-  } else {
-    res.send("Herói não encontrado!");
+  const index = currentContent.findIndex(hero => hero.id.toString() === id);
+  if (index === -1) {
+    return res.status(404).send({ message: "Herói não encontrado!" });
   }
+
+  currentContent.splice(index, 1);
+  writeFile(currentContent);
+  res.send({ message: "Herói deletado com sucesso!" });
 });
 
-
-// app.listen(port, () => {
-//   console.log("Servidor iniciado na porta 7000: http://0.0.0.0:7000/");
-// });
-
-// Ajuste para AWS
-app.listen(443, '0.0.0.0', () => {
-  console.log('Servidor iniciado na porta 443');
+// Iniciar HTTPS na AWS (porta 443)
+https.createServer(options, app).listen(443, "0.0.0.0", () => {
+  console.log("Servidor HTTPS rodando na porta 443");
 });
 
+// Iniciar HTTP para desenvolvimento local (porta 7000)
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}: http://localhost:${port}/`);
+  });
+}
