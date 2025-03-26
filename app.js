@@ -91,8 +91,8 @@ https.createServer(options, app).listen(443, "0.0.0.0", () => {
 });
 
 // Iniciar HTTP para desenvolvimento local (porta 7000)
-if (process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}: http://localhost:${port}/`);
-  });
-}
+//if (process.env.NODE_ENV !== "production") {
+  //app.listen(port, () => {
+   // console.log(`Servidor rodando na porta ${port}: http://localhost:${port}/`);
+ // });
+//}
